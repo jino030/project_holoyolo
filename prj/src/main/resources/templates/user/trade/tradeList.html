@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{layout/layout}">
+<head>
+<meta charset="UTF-8">
+<title>holoyolo::중고거래</title>
+<link th:href="@{/user/css/trade.css}" rel="stylesheet" type="text/css">
+<!-- 소스 다운 -->
+<script src="https://unpkg.com/@yaireo/tagify"></script>
+<!-- 폴리필 (구버젼 브라우저 지원) -->
+<script
+	src="https://unpkg.com/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+<link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css"
+	rel="stylesheet" type="text/css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script type="text/javascript" src="/common/js/jquery.twbsPagination.min.js"></script>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="searchwrap">
+			<form action="#">
+				<div>
+                   	<label class="sellcheck">
+					  <span>모든 중고거래<input type="checkbox"></span>
+					</label>
+					<select id="searchCategory">
+						<option selected value="">카테고리</option>
+						<option value="TB1">생활용품</option>
+                        <option value="TB2">의류</option>
+                        <option value="TB3">식품</option>
+                        <option value="TB4">반려용품</option>
+                        <option value="TB5">도서</option>
+                        <option value="TB6">문구</option>
+                        <option value="TB7">가구</option>
+                        <option value="TB8">기타</option>
+                   	</select>
+					<select id="searchTitle">
+	                    <option value="title">제목</option>
+	                    <option value="tradePlace">지역명</option>
+	                </select>
+					<div class="search header_search">
+						<input type="search" id="search_input" class="search_input" required="required"
+							placeholder="검색어를 입력하세요" autofocus>
+						<button type="submit" id="search_button" class="search_button">
+							<img th:src="@{/common/images/magnifying-glass.svg}">
+						</button>
+					</div>
+				</div>
+			</form>
+			<div class="insertbutton" sec:authorize="isAuthenticated()" th:onclick="|location.href='@{/member/tradeInsert}'|">
+				게시글 등록
+			</div>
+		</div>
+		<div class="container">
+			<div class="row" id="tradeList">
+			</div>
+		</div>
+		<nav aria-label="Page navigation" id="page">
+            <ul class="pagination" id="pagination" style="text-align: center;"></ul>
+        </nav>
+        <script th:src="@{/user/js/trade.js}"></script>
+	</div>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.holoyolo.app.club.mapper.ClubMapper">
+  
+  	<select id="getClubDetail" resultType="ClubVO">
+  		SELECT
+		    c.club_id,
+		    c.club_name,
+		    c.club_leader,
+		    (select nickname
+            from member
+            where member_id = c.club_leader) as leader_name,
+		    c.club_people,
+		    c.club_intro,
+		    c.club_date,
+		    c.club_profile_img,
+		    b.use_yn,
+		    b.club_budget_price AS price,
+		    COALESCE(cs.successCnt, 0) AS successCnt,
+		    COALESCE(cm.join_Cnt, 0) AS join_Cnt
+		FROM club c
+		JOIN club_budget b ON c.club_id = b.club_id
+		LEFT JOIN (
+		    SELECT
+		        club_id,
+		        COUNT(*) AS successCnt
+		    FROM club_success_history
+		    WHERE fn_get_code_name(success_state) = '성공'
+		    GROUP BY club_id
+		) cs ON c.club_id = cs.club_id
+		LEFT JOIN (
+		    SELECT
+		        club_id,
+		        COUNT(member_id) AS join_Cnt
+		    FROM club_member
+		    WHERE stop_date IS NULL OR stop_date > CURRENT_DATE
+		    GROUP BY club_id
+		) cm ON c.club_id = cm.club_id
+		WHERE c.club_id = #{clubId} AND b.use_yn = 'Y'
+  	</select>
+
+	<select id="getClub" resultType="ClubVO">
+		SELECT c.*, m.nickname as leader_name
+		FROM club c JOIN member m ON c.club_leader = m.member_id 
+		WHERE club_id = #{clubId}
+	</select>
+  
+  	<select id="selectClubAll" resultType="ClubVO">
+  		SELECT * FROM (SELECT A.* , ROWNUM rn FROM (
+		SELECT club_id
+		    , club_name
+		    , club_leader
+		    , club_people
+		    , club_date
+		    , fn_get_code_name(open_scope) AS open_scope
+		FROM club
+		<where>
+			<if test="openScope != null and openScope != '' ">
+				AND open_scope = #{openScope}
+			</if>
+			<if test="search != null and search != ''">
+				AND (
+					club_id LIKE '%'||#{search}||'%' OR 
+					club_name LIKE '%'||#{search}||'%' OR
+					club_leader LIKE '%'||#{search}||'%'
+					)
+				AND open_scope LIKE '%'||#{openScope}||'%'
+			</if>
+		</where>
+		ORDER BY club_id
+		) A) b WHERE rn BETWEEN (#{page}-1)*#{pageUnit} + 1 and #{page} * #{pageUnit}
+  	</select>
+  	
+  	
+  
+
+  	
+  	<select id="getAllClubList" resultType="ClubVO">
+  		SELECT c.*, m.nickname as leader_name
+  		FROM club c join member m on c.club_leader = m.member_id
+  		ORDER BY club_id
+  	</select>
+  	
+  
+  	<!-- 알뜰모임 목록리스트 -->
+  	<select id="getClubList" resultType="ClubVO">
+
+            SELECT * 
+    		FROM (
+       			SELECT rownum rn, a.*
+        		FROM ( 
+            		
+            		<if test="search != null or search != ''">
+                		<if test="searchTitle == 'clubname'">
+                		SELECT c.*, m.nickname as leader_name
+                    	FROM club c join member m on c.club_leader = m.member_id
+                    	WHERE club_name LIKE '%'||#{search}||'%'
+                		</if>
+	                	<if test="searchTitle == 'clubking'">
+	                    	SELECT *
+	                    	FROM (
+		                        SELECT c.*, m.nickname as leader_name
+		                        FROM club c 
+		                        JOIN member m ON c.club_leader = m.member_id
+		                        WHERE m.nickname LIKE '%'||#{search}||'%'
+	                    	)
+	                	</if>
+            		</if>
+		            <if test="search == null or search == ''">
+		            SELECT c.*, m.nickname as leader_name
+		            FROM club c join member m on c.club_leader = m.member_id
+		            </if>
+           			ORDER BY club_id DESC
+        		) A
+        		<![CDATA[
+        		WHERE rownum <= #{page} * 6
+    		) b
+    		WHERE b.rn > (#{page} - 1) * 6
+			]]>
+  	</select>
+  	
+  	<!-- 검색 시 데이터 총 갯수 -->
+  	<select id="cntData" parameterType="ClubVO" resultType="int">
+    SELECT COUNT(*) 
+        <if test="search != null or search != ''">
+            <if test="searchTitle == 'clubname'">
+                FROM club
+                WHERE club_name LIKE '%'||#{search}||'%'
+            </if>
+            <if test="searchTitle == 'clubking'">
+                FROM
+                (SELECT c.*, m.nickname
+                 FROM club c
+                 JOIN member m ON c.club_leader = m.member_id
+                 WHERE m.nickname LIKE '%'||#{search}||'%')
+            </if>
+         </if>
+        <if test="search == null or search == ''">
+            FROM club
+        </if>
+  		
+  	</select>
+  	
+  	<!-- 클럽생성 -->
+  	<insert id="insertClub" parameterType="ClubVO">
+  	  	<selectKey keyProperty="clubId"
+					   resultType="int"
+					   order="BEFORE">
+	  		    SELECT NVL(MAX(club_id),0) + 1
+				FROM club
+	  	</selectKey>
+  		INSERT into club 
+  		VALUES 
+  			(
+  				#{clubId}
+  				,#{clubName} 
+  				,#{clubIntro}
+  				,#{clubProfileImg}
+  				,#{clubPeople}
+  				,#{joinCondition}
+  				,#{openScope}
+  				,null
+  				,#{clubLeader}
+  				,sysdate
+  			)
+  	</insert>
+  	
+  	<!-- 클럽장위임 -->
+  	<update id="mandateKing" parameterType="ClubVO">
+  		UPDATE club
+  		SET club_leader = #{clubLeader}
+  		WHERE club_id = #{clubId}
+  	</update>
+  	
+  	<!-- 클럽 기본 정보 수정 -->
+  	<update id="updateClubInfo" parameterType="ClubVO">
+  		UPDATE club
+  		SET 
+  			club_name = #{clubName}
+  			, club_intro = #{clubIntro}
+  			, club_people = #{clubPeople}
+  			, join_condition = #{joinCondition}
+  			, open_scope = #{openScope}
+  		WHERE club_id = #{clubId}
+  	</update>
+  	
+  	<!-- 클럽 프로필이미지 수정 -->
+  	<update id="updateClubProfile" parameterType="ClubVO">
+  		UPDATE club
+  		SET
+  			club_profile_img = #{clubProfileImg}
+  		WHERE club_id = #{clubId}
+  	</update>
+
+	<!-- 클럽삭제 -->
+	<delete id="delectClub" parameterType="ClubVO">
+		DELETE club
+		WHERE club_id = #{clubId}
+	</delete>
+	
+	<!-- 베스트 클럽리스트(메인페이지용) -->
+	<select id="bestClubList" resultType="ClubVO">
+		SELECT LPAD(ROWNUM, 2, '0') rnum, T.*
+		FROM (  SELECT club_id
+		               , club_name
+		               , club_intro
+		               , fn_club_success_rate(club_id) AS success_rate
+		               , club_people
+		               , (SELECT COUNT(*) FROM club_member WHERE CLUB_ID = C.CLUB_ID AND join_date is not null AND stop_date is null) AS join_cnt
+		               , fn_get_code_name(open_scope) AS open_scope
+		               , club_profile_img
+		               , fn_mem_nickname(club_leader) club_leader
+		        FROM CLUB C
+		        ORDER BY success_rate DESC, join_cnt DESC) T
+		WHERE ROWNUM <![CDATA[<=]]> #{page}
+	
+	</select>
+	
+	
+	<!-- 회원이 속한 알뜰모임 목록 -->
+	<select id="getMyClub" resultType="ClubVO">
+		SELECT c.*
+		FROM club c JOIN club_member cm ON c.club_id = cm.club_id
+		WHERE cm.member_id = #{memberId} 
+		AND cm.join_date is not null
+		AND cm.stop_date is null
+	</select>
+	
+  </mapper>

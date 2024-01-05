@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>holoyolo::알뜰모임</title>
+    <link rel="stylesheet" href="/user/css/clubPage.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
+</head>
+
+<body>
+    <div layout:fragment="content" class="club_page_wrap">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div>
+                <strong>알뜰모임 성공 기록</strong>은 다음 날 아침 10시 이전 또는 이후에 업데이트됩니다.
+            </div>
+        </div>
+        <div class="row content_wrap" style="justify-content: space-between;">
+            <div class="col-8">
+                <div class="info clubInfo">
+                    <div class="club_info" style="display: flex;">
+                        <div id="profile-container">
+                            <!-- <img th:src="@{'/images/' + ${result.club.clubProfileImg}}" id="profile" /> -->
+                            <th:block th:if="${#authentication.Principal.memberVO.memberId != result.club.clubLeader}">
+                                <div class="memberProfile">
+                                    <div class="upload profile"
+                                        th:style="'background-image:url(\'/images/'+ ${result.club.clubProfileImg} +'\');'">
+                                    </div>
+                                </div>
+                            </th:block>
+                            <th:block th:if="${#authentication.Principal.memberVO.memberId eq result.club.clubLeader}">
+                                <input class="input_file real_upload" type="file" name="uploadFiles" accept="image/*" />
+                                <div class="memberProfile">
+                                    <div class="upload profile" data-toggle="tooltip" data-placement="top"
+                                        title="Click! 프로필 사진 변경"
+                                        th:style="'background-image:url(\'/images/'+ ${result.club.clubProfileImg} +'\');'">
+                                    </div>
+                                </div>
+                            </th:block>
+                        </div>
+                        <div style="flex: 1;" class="info_wrap dp-flex-col">
+                            <div class="dp-flex-col">
+                                <h2 class="club_name">
+                                    <p>[[${result.club.clubName}]]</p>
+                                    <th:block
+                                        th:if="${#authentication.Principal.memberVO.memberId eq result.club.clubLeader}">
+                                        <button class="btn btn-primary"
+                                            th:onclick="|location.href='@{/member/club/clubUpdate(clubId=${result.club.clubId})}'|">수정</button>
+                                    </th:block>
+                                </h2>
+                                <h4 class="dp-flex-center">
+                                    <img class="leader" alt="모임장로고" src="/user/home/images/leader.svg">
+                                    [[${result.club.leaderName}]]
+                                </h4>
+                                <h4>&ldquo;[[${result.club.clubIntro}]]&rdquo;</h4>
+                            </div>
+                            <div class="dp-flex-col">
+                                <h4><span class="text-bg-color">가입인원</span>[[${result.club.joinCnt}]] /
+                                    [[${result.club.clubPeople}]]</h4>
+                                <h4><span class="text-bg-color">평균성공률</span>[[${result.avg}]]%</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="dp-flex-col">
+                        <h4><span class="text-bg-color">가입조건</span>[[${result.club.joinCondition}]]</h4>
+                        <th:block th:if="${result.budget != null}">
+                            <h4><span class="text-bg-color">절약예산</span>
+                                <span class="budget_unit">[[${result.budget.clubBudgetUnit}]]</span>
+                                <span
+                                    th:text="|${#numbers.formatInteger(result.budget.clubBudgetPrice, 0, 'COMMA')}원|"></span>
+                                <th:block
+                                    th:if="${#authentication.Principal.memberVO.memberId eq result.club.clubLeader}">
+                                    <button type="button" class="mybtn" data-toggle="modal" data-target="#updateBudget"
+                                        data-whatever="수정" th:data-budgetunit="${result.budget.clubBudgetUnit}"
+                                        th:data-budgetprice="${result.budget.clubBudgetPrice}">
+                                        ✔️
+                                    </button>
+                                </th:block>
+                            </h4>
+                        </th:block>
+                        <th:block th:if="${result.budget == null}">
+                            <h4>절약예산이 등록되지 않았습니다.</h4>
+                        </th:block>
+                    </div>
+                    <div class="btn_wrap">
+                        <th:block
+                            th:if="${session.check eq false and result.club.joinCnt < result.club.clubPeople and result.club.openScope eq 'OA1'}">
+                            <button class="btn btn-primary" onclick="join()">즉시가입</button><br>
+                        </th:block>
+                        <th:block
+                            th:if="${session.check eq false and result.club.joinCnt < result.club.clubPeople and result.club.openScope eq 'OA2'}">
+                            <button class="btn btn-primary" id="sendMail" onclick="sendMail()">가입신청</button><br>
+                        </th:block>
+                        <th:block th:if="${session.check eq '탈퇴'}">
+                            <button class="btn btn-primary" onclick="rejoin()">재가입</button><br>
+                        </th:block>
+                        <th:block th:if="${session.check eq '승인대기'}">
+                            <button class="btn btn-secondary" disabled>승인대기</button><br>
+                        </th:block>
+                        <th:block th:if="${session.check eq '재가입승인대기'}">
+                            <button class="btn btn-secondary" disabled>재가입승인대기</button><br>
+                        </th:block>
+                        <th:block th:if="${session.check eq true}">
+                            <button class="btn btn-danger" id="outClub" onclick="outClub()">모임탈퇴</button><br>
+                        </th:block>
+                        <th:block th:if="${#authentication.Principal.memberVO.memberId eq result.club.clubLeader}">
+                            <button class="btn btn-danger" onclick="clubRemove()">모임삭제</button><br>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-4">
+                <div class="info memberList">
+                    <h3>
+                    	<img th:src="@{/user/images/club/ranking.png}" class="rank-logo">
+                    현재 순위
+                    </h3>
+                    <!-- <div th:text="${#dates.format(result.start, 'yyyy년 MM월 dd일')}"></div>
+                    <div th:text="${#dates.format(result.end, 'yyyy년 MM월 dd일')}"></div> -->
+                    <th:block th:if="${session.check eq true}">
+                    	<span class="date" th:if="${result.start == result.end}" th:text="${result.start}">
+                    	</span>
+                    	<span class="date" th:if="${result.start != result.end}" th:text="|${result.start} ~ ${result.end}|">
+                    	</span>
+                        <div th:each="member : ${result.members}" class="dp-flex-center rank_member_info">
+                            <th:block th:if="${member.memberId == result.club.clubLeader}">
+                                <div class="member_profile"
+                                    th:style="'background-image:url(\'/images/'+ ${member.profileImg} +'\');'"></div>
+                                <span class="nickname"
+                                    th:onclick="memberInfo(this.getAttribute('data-member-id'), this.getAttribute('data-member-name'))"
+                                    th:data-member-id="${member.memberId}" th:data-member-name="${member.nickname}"
+                                    th:title="|${#numbers.formatInteger(member.sumPrice, 0, 'COMMA')}원|"
+                                    data-toggle="tooltip" data-placement="top">[[${member.nickname}]]님</span>
+                            </th:block>
+                            <th:block th:if="${member.memberId != result.club.clubLeader}">
+                                <div class="member_profile" th:data-member-id="${member.memberId}"
+                                    th:onclick="mandate(this.getAttribute('data-member-id'))"
+                                    th:style="'background-image:url(\'/images/'+ ${member.profileImg} +'\');'"></div>
+                                <span class="nickname"
+                                    th:onclick="memberInfo(this.getAttribute('data-member-id'), this.getAttribute('data-member-name'))"
+                                    th:data-member-id="${member.memberId}" th:data-member-name="${member.nickname}"
+                                    th:title="|${#numbers.formatInteger(member.sumPrice, 0, 'COMMA')}원|"
+                                    data-toggle="tooltip" data-placement="top">[[${member.nickname}]]님</span>
+                            </th:block>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${session.check != true}">
+
+                        <h5>멤버만 확인할 수 있습니다.</h5>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="modal fade" id="updateBudget" tabindex="-1" aria-labelledby="updateBudgetLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateBudgetLabel">예산 수정</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- //th:action="@{cardInsert}" -->
+                        <form method="POST" th:action="@{updateBudget}" th:object="${ClubBudgetVO}">
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">예산 단위</label>
+                                <br>
+                                <select id="clubBudgetUnitSelect" th:field="*{clubBudgetUnit}">
+                                    <div class="dropdown-menu">
+                                        <option value="YA1">
+                                            <div class="dropdown-item">일</div>
+                                        </option>
+                                        <option value="YA2">
+                                            <div class="dropdown-item">주</div>
+                                        </option>
+                                        <option value="YA3">
+                                            <div class="dropdown-item">월</div>
+                                        </option>
+                                    </div>
+                                </select>
+                                <div class="form-group">
+                                    <label for="clubBudgetPrice" class="col-form-label">예산금액</label>
+                                    <input type="text" class="form-control" id="clubBudgetPrice" style="resize: none;"
+                                        th:field="*{clubBudgetPrice}" placeholder="(원)" />
+                                    <input type="text" class="form-control" id="clubId" style="resize: none;"
+                                        th:field="*{clubId}" placeholder="(원)" hidden />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary" id="addBudgetBtn">수정</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script th:inline="javascript">
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            })
+            let userId = /*[[${userId}]]*/ null;
+            let leader = (userId === /*[[${result.club.clubLeader}]]*/ null) ? true : false;
+            let clubLeader = /*[[${result.club.clubLeader}]]*/ null;
+            let clubName = /*[[${result.club.clubName}]]*/ null;
+
+
+            //클럽탈퇴버튼
+            // let outClubBtn = document.getElementById('outClub');
+            // outClubBtn.addEventListener("click", outClub);
+
+            //클럽가입신청버튼
+            // let sendMailBtn = document.getElementById('sendMail');
+            // sendMailBtn.addEventListener("click", sendMail);
+        </script>
+        <script th:src="@{/user/js/clubpage.js}"></script>
+    </div>
+
+</body>
+
+</html>

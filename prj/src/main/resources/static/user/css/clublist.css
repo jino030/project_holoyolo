@@ -1,0 +1,134 @@
+        .search {
+            width: 100%;
+            position: realative;
+        }
+
+        .search_delete {
+            margin-bottom: 15px;
+        }
+
+        .searchwrap {
+            display: flex;
+            justify-content: space-evenly;
+        }
+
+        .deleteAll {
+            margin-top: 17px;
+        }
+
+        #pagination {
+
+            justify-content: center;
+        }
+        #clubList {
+            display: flex;
+            /* justify-content: center; */
+            margin-top: 60px;
+            margin-bottom: 60px;
+        }
+
+        .card_club {
+            border-radius: 5px;
+            box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+            display: flex;
+            height: 220px;
+            padding: 0;
+            margin: 1%;
+		    max-width: 48%;
+		    flex: 0 0 48%;
+    		max-width: 48%;
+    		box-sizing: border-box;
+    		background: #fff;
+        }
+
+        .club_img,
+        .club_info {
+            flex: 1;
+        }
+        .club_img img {
+        	width: 100%;
+        	height: 100% !important;
+        	object-fit: cover;
+        	border-radius: 5px 0 0 5px;
+        	border: none;
+        }
+
+        .club_info {
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        .club_img {
+            justify-content: center;
+            display: flex;
+        }
+        
+        .club_info button {
+        	border: none;
+        	padding: 5px 10px;
+        	border-radius: 5px;
+        	margin-top: 7px;
+        	background: #dce5ed;
+        	font-size: 13px;
+        }
+
+
+/* 寃��깋 */
+.products {
+	background: #fcfcfc;
+}
+.row {
+	margin: 0;
+}
+.header_search > .row {
+	margin: 0 15px;
+	justify-content: flex-start;
+	gap: 10px;
+}
+.new_club_btn {
+	border: none;
+	background: #09203f;
+	border-radius: 5px;
+	max-width: 120px;
+	color: #fff;
+}
+.search-wrap {
+	background: #fff;
+	max-width: 450px;
+}
+
+.clubName {
+    font-size: 20px;
+    font-weight: bold;
+    color: #0f325f;
+}
+
+.clubIntro {
+    font-size: 15px;
+    color: gray;
+}
+.leader {
+	width: 22px;
+	margin-top: 3px;
+    margin-right: 5px;
+}
+
+.clubKing {
+    margin-top: 20px;
+}
+
+.text-bg-color {
+	display: inline-block;
+	background: #e6e6e6;
+	font-size: 12px;
+	padding: 5px 8px;
+	border-radius: 5px;
+	margin-right: 5px;
+    margin-top: 5px;
+	width: 73px;
+	text-align: center;
+} 
+
+.people {
+	margin-top : 10px;
+}

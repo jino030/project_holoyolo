@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <mapper namespace="com.holoyolo.app.member.mapper.MemberMapper">
+ 
+ 	<select id="selectUser" resultType="MemberVO" parameterType="String">
+		SELECT member_id
+			   , member_name
+			   , password
+			   , nickname
+			   , addr
+			   , REGEXP_REPLACE(phone, '(02|.{3})(.+)(.{4})', '\1-\2-\3') phone
+			   , join_date
+			   , stop_date
+			   , role
+			   , profile_img
+			   , member_intro
+			   , report_cnt
+			   , freedom_date
+			   , login_fail_cnt
+			   , lock_yn
+			   , sns_yn
+			   , detail_addr
+		FROM member
+		WHERE member_id = #{username}
+	</select>
+	
+	<!-- 회원가입 전 인증된 휴대폰 번호가 있는지 확인 -->
+	<select id="checkUserPhone" parameterType="MemberVO">
+		SELECT *
+		FROM member
+		WHERE phone = #{phone}
+	</select>
+
+	<!-- 회원가입 -->
+	<insert id="joinUser" parameterType="MemberVO">
+		INSERT INTO member
+					(
+						member_id
+						, member_name
+						, password
+						, nickname
+						, addr
+						, detail_addr
+						, phone
+						, join_date
+						, role
+						, sns_yn
+					)
+			VALUES  (
+						#{memberId}
+						, #{memberName}
+						, #{password}
+						, #{nickname}
+						, #{addr}
+						, #{detailAddr}
+						, #{phone}
+						, sysdate
+						, #{role}
+						, #{snsYn}
+					)
+	</insert>
+	
+	<!-- 회원 가입일자 -->
+
+	<!-- 멤버 가입날짜 -->
+	<select id="selectJoinDate" resultType="MemberVO">
+		SELECT join_date 
+		FROM member 
+		WHERE member_id = #{memberId}
+	</select>
+	
+	<!-- 회원가입 - 아이디 중복체크 -->
+	<select id="checkMemberId" resultType="MemberVO">
+		SELECT member_id
+		FROM member
+		WHERE member_id = #{memberId}
+	</select>
+	
+	<!-- 회원가입 - 닉네임 중복체크 -->
+	<select id="checkNickname" resultType="MemberVO">
+		SELECT nickname
+		FROM member
+		WHERE nickname = #{nickname}
+	</select>
+	
+	<!-- 아이디 찾기(이름, 휴대폰) / 비밀번호 찾기(이름, 아이디) -->
+	<select id="findMemberIdPwd" resultType="MemberVO">
+		SELECT member_id
+			   , stop_date
+		FROM member
+		WHERE member_name = #{memberName}
+		<if test="memberId != null">AND member_id = #{memberId}</if>
+		<if test="phone != null">AND phone = #{phone}</if>
+	</select>
+	
+	<!-- 회원 임시비밀번호로 업데이트 -->
+	<update id="updateMemberPwd" parameterType="String">
+		UPDATE member
+		SET password = #{authNum}
+			, login_fail_cnt = 0
+		WHERE member_id = #{memberId}
+	</update>
+	
+	<!-- 로그인 실패횟수 ++ -->
+	<update id="updateMemberFailCnt" parameterType="MemberVO">
+		UPDATE member
+		SET login_fail_cnt = login_fail_cnt + 1
+        WHERE member_id = #{memberId}
+	</update>
+	
+	<!-- 로그인 실패횟수 리셋 -->
+	<update id="updateMemberFailCntReset" parameterType="MemberVO">
+		UPDATE member
+		SET login_fail_cnt = 0
+        WHERE member_id = #{memberId}
+	</update>
+	
+	<!-- 회원정보 업데이트 -->
+	<update id="updateMemberInfo" parameterType="MemberVO">
+		UPDATE member
+		<set>
+			<if test="memberName != null">member_name = #{memberName},</if>
+			<if test="password != null and delMember == null">password = #{password},</if>
+			<if test="nickname != null">nickname = #{nickname},</if>
+			<if test="addr != null">addr = #{addr},</if>
+			<if test="detailAddr != null">detail_addr = #{detailAddr},</if>
+			<if test="phone != null">phone = #{phone},</if>
+			<if test="role != null">role = #{role},</if>
+			<if test="profileImg != null">profile_img = #{profileImg},</if>
+			<if test="memberIntro != null">member_intro = #{memberIntro},</if>
+			<if test="reportCnt != -1">report_cnt = #{reportCnt},</if>
+			<if test="lockYn != null">lock_yn = #{lockYn},</if>
+			<if test="stopDate != null">stop_date = #{stopDate},</if>
+		</set>
+		WHERE member_id = #{memberId}
+	</update>
+	
+	<!-- 회원관련 정보 삭제(탈퇴시) -->
+	<select id="deleteMemberInfo" statementType="CALLABLE" resultType="MemberVO">
+		{call del_member_info(#{memberId}, #{vResult, mode=OUT, jdbcType=VARCHAR})}
+	</select>
+	
+	<!-- 어드민 -->
+	<select id="getHolopayHistory" resultType="MemberVO">
+		SELECT *
+		FROM (
+		    SELECT A.*, ROWNUM rn
+		    FROM (
+		        SELECT
+		            member_id,
+		            nickname,
+		            point_price,
+		            holopay_price
+		        FROM (
+		            SELECT
+		                member_id,
+		                nickname,
+		                SUM(CASE point_type WHEN 'PA1' THEN price ELSE price * -1 END) AS point_price,
+		                SUM(CASE WHEN hp_type IN ('HP1', 'HP4') THEN hp_price ELSE hp_price * -1 END) AS holopay_price
+		            FROM (
+		                SELECT
+		                    p.member_id,
+		                    m.nickname,
+		                    p.point_type,
+		                    p.price,
+		                    '' AS hp_type,
+		                    0 AS hp_price
+		                FROM member m
+		                JOIN point_history p ON p.member_id = m.member_id
+		                UNION ALL
+		                SELECT
+		                    h.member_id,
+		                    m.nickname,
+		                    '',
+		                    0,
+		                    h.hp_type,
+		                    h.price
+		                FROM member m
+		                JOIN holopay_history h ON h.member_id = m.member_id
+		            ) a
+		            <where>
+						<if test="search != null and search != ''">
+			            	member_id LIKE '%'||#{search}||'%' OR nickname LIKE '%'||#{search}||'%'
+						</if>
+					</where>
+		            GROUP BY
+		                member_id, nickname
+		            ORDER BY
+		                member_id , nickname
+		        )
+		    ) A
+		) b
+		WHERE rn BETWEEN (#{page}-1)*#{pageUnit} + 1 AND #{page} * #{pageUnit}
+		
+	</select>
+	
+	<!-- 회원 전체조회 -->
+	<select id="selectMemberAll" resultType="MemberVO">
+	    SELECT * FROM (
+	        SELECT A.*, ROWNUM rn FROM (
+		        SELECT * FROM ( 
+		            SELECT
+		                m.member_name,
+		                m.member_id,
+		                    NVL(m.phone, '-') AS phone,
+		                    NVL(m.addr, '-') AS addr,
+		                m.join_date,
+		                role
+		                <!--NVL(TO_CHAR(fn_get_code_name(role)), '관리자') AS role-->
+		            FROM member m 
+		            ) member
+		            <where>
+		                <if test="role != null and role != '' ">
+		                    AND role = #{role}
+		                </if>
+		                <if test="search != null and search != ''">
+		                    AND (member_name LIKE '%'||#{search}||'%' OR member_id LIKE '%'||#{search}||'%' OR phone LIKE '%'||#{search}||'%' OR addr LIKE '%'||#{search}||'%')
+		                </if>
+		            </where>
+		            ORDER BY join_date DESC
+	        ) A
+	    ) b
+	    WHERE rn BETWEEN (#{page}-1)*#{pageUnit} + 1 AND #{page} * #{pageUnit}
+	</select>
+	
+	<select id="selectMemberCount" resultType="int">
+		SELECT COUNT(*) FROM (  
+			SELECT
+			    member_name
+			  , member_id
+			  , phone
+			  , addr
+			  , join_date
+			  , fn_get_code_name(role) AS role
+			FROM member
+			  ) member
+  	  <where>
+		<if test="role != null and role != '' ">
+		 role = #{role}
+	  	</if>
+	  </where>
+	</select>
+	
+    <select id="findById" parameterType="String" resultType="MemberVO">
+        SELECT * FROM member WHERE member_id = #{memberId}
+    </select>
+    
+    <select id="addMonth" resultType="MemberVO">
+    	SELECT ADD_MONTHS(sysdate, 1) FROM dual
+    </select>
+    
+    <!-- 회원 아이디 전체 조회 -->
+    <select id="getMembersId" resultType="String">
+    	SELECT member_id 
+    	FROM member
+    </select>
+ </mapper>

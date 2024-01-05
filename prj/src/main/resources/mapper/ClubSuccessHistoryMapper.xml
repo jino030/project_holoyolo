@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.holoyolo.app.clubSuccessHistory.mapper.ClubSuccessHistoryMapper">
+  
+  	<!-- 해당 클럽의 성공 횟수 -->
+  	<select id="getSuccessCount" resultType="int" parameterType="ClubVO">
+        SELECT COUNT(*)
+		FROM club_success_history
+			WHERE club_id = #{clubId}
+			AND fn_get_code_name(success_state) = '성공'
+  	</select>
+  
+  	<!-- 해당 클럽의 평균 성공률 -->
+  	<select id="getSuccessPct" resultType="double" parameterType="ClubVO">
+        SELECT 
+    		CASE 
+        		WHEN (SELECT COUNT(*) FROM club_success_history WHERE club_id = #{clubId} AND success_state != 'SU3') = 0 THEN 0
+        	ELSE
+	            ROUND(((SELECT COUNT(*) FROM club_success_history WHERE club_id = #{clubId} AND success_state = 'SU1') /
+	            (SELECT COUNT(*) FROM club_success_history WHERE club_id = #{clubId} AND success_state != 'SU3'))*100, 0)
+    		END as result 
+		FROM DUAL
+  	</select>
+  	
+  	<!-- 해당 클럽의 현재 진행중인 기간 -->
+  	<select id="getIng" resultType="ClubSuccessHistoryVO">
+  		SELECT * 
+  		FROM club_success_history 
+  		WHERE club_id = #{clubId}
+  		AND success_state = 'SU3'
+  	</select>
+  	
+  	<!-- 진행중인 성공기록 새로 넣어주기 -->
+  	<insert id="insertSuccessIng" parameterType="ClubBudgetVO">
+	    <selectKey keyProperty="goalId" resultType="int" order="BEFORE">
+	        SELECT NVL(MAX(goal_id), 0) + 1
+	        FROM club_success_history
+	    </selectKey>
+	    INSERT INTO club_success_history 
+	    VALUES (
+	        #{goalId},
+	        SYSDATE,
+	        <if test="clubBudgetUnit == 'YA1'">
+	            SYSDATE,
+	        </if>
+	        <if test="clubBudgetUnit == 'YA2'">
+	            SYSDATE + 6,
+	        </if>
+	        <if test="clubBudgetUnit == 'YA3'">
+	            SYSDATE + 29,
+	        </if>
+	        'SU3',
+	        NULL,
+	        #{clubBudgetId},
+	        #{clubId}
+	    )
+	</insert>
+	
+	<!-- 현재 진행중인 성공기록 삭제 -->
+	<delete id="deleteIng" parameterType="ClubBudgetVO">
+		DELETE club_success_history 
+		WHERE success_state = 'SU3' 
+		AND club_id = #{clubId}
+	</delete>
+	
+	<!-- 클럽별 성공기록 -->
+	<select id="getClubSuccess" resultType="ClubSuccessHistoryVO">
+		SELECT * 
+		FROM club_success_history 
+		WHERE club_id = #{clubId}
+		AND success_state != 'SU3'
+		ORDER BY goal_id
+	</select>
+
+  </mapper>

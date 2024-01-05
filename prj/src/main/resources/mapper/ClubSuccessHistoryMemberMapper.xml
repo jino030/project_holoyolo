@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.holoyolo.app.clubSuccessHistoryMember.mapper.ClubSuccessHistoryMemberMapper">
+  
+  	<!-- 해당 회원의 해당 클럽 지난 랭킹가져오기 -->
+  	<select id="getRankingLast" parameterType="ClubMemberVO" resultType="ClubMemberVO">
+  	        SELECT NVL(ranking,0) as ranking
+  	        FROM club_success_history_member 
+  	        WHERE goal_id = (
+                			SELECT * 
+                			FROM (
+                        			SELECT goal_id 
+                        			FROM club_success_history 
+                        			WHERE club_id = #{clubId}
+                        			AND success_state != 'SU3' 
+                        			ORDER BY end_date desc
+                        			)
+                			WHERE rownum = 1)
+           AND member_id = #{memberId}
+  	</select>
+  	
+  	<!-- 해당 회원의 최근 5회 성적가져오기 -->
+<select id="getSuccessMember" parameterType="ClubMemberVO" resultType="ClubSuccessHistoryMemberVO">
+	    SELECT *
+	    FROM (
+	        SELECT csh.*, cs.start_date, cs.end_date, m.member_intro , m.profile_img 
+	        FROM club_success_history_member csh
+	        JOIN club_success_history cs ON csh.goal_id = cs.goal_id
+	        JOIN member m ON m.member_id = csh.member_id
+	        WHERE csh.member_id = #{memberId}
+	          AND cs.club_id = #{clubId}
+	        ORDER BY csh.goal_member_id DESC
+	    )
+	    <![CDATA[
+	    WHERE ROWNUM <= 5
+	    ]]>
+</select>
+  	
+  </mapper>

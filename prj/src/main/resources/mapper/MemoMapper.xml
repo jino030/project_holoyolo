@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.holoyolo.app.memo.mapper.MemoMapper">
+
+	<resultMap type="MemoVO" id="selectMemoListMap">
+		<id column="memo_id" property="memoId"/>
+		<collection property="images" ofType="AttachmentVO" column="memo_id" select="selectAttachList" javaType="ArrayList"></collection>
+	</resultMap>
+	<!-- 전체조회 -->
+	<select id="selectMemoList" resultMap="selectMemoListMap">
+		SELECT memo_id
+				, seq_no
+				, color
+				, content
+				, hash_tag
+				, bookmark
+				, write_date
+				, update_date
+				, member_id
+		FROM memo
+		WHERE member_id = #{memberId}
+		ORDER BY seq_no
+	</select>
+	<select id="selectAttachList" resultType="AttachmentVO">
+		select * from attachment
+		where menu_type = 'AA7'
+		and post_id = #{memoId}
+		ORDER BY attachment_seq
+	</select>
+	
+	<resultMap type="MemoVO" id="selectMemoMap">
+		<id column="memo_id" property="memoId"/>
+		<collection property="images" ofType="AttachmentVO" column="memo_id" select="selectAttach" javaType="ArrayList"></collection>
+	</resultMap>
+	<!-- 단건조회 -->
+	<select id="selectMemo" resultMap="selectMemoMap">
+		SELECT memo_id
+				, seq_no
+				, color
+				, content
+				, hash_tag
+				, bookmark
+				, write_date
+				, update_date
+				, member_id
+		FROM memo
+		WHERE memo_id = #{memoId}
+		AND member_id = #{memberId}
+	</select>
+	<select id="selectAttach" resultType="AttachmentVO">
+		select * from attachment
+		where menu_type = 'AA7'
+		and post_id = #{memoId}
+	</select>
+	
+	<select id="selectMemoMax" resultType="int">
+		SELECT MAX(memo_id) as memoId
+		FROM memo
+		WHERE member_id = #{memberId}
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="insertMemo" parameterType="MemoVO">
+		<selectKey keyProperty="memoId" resultType="int" order="BEFORE">
+			SELECT NVL(MAX(memo_id),0) + 1 as memoId
+			FROM memo
+		</selectKey>
+		INSERT INTO memo
+			(
+				memo_id
+				, seq_no
+				<if test="color != ''">
+					, color
+				</if>
+				<if test="content != ''">
+					, content
+				</if>
+				<if test="hashTag != ''">
+					, hash_tag
+				</if>
+				, bookmark
+				, member_id
+			)
+		VALUES
+			(
+				#{memoId}
+				, 0
+				<if test="color != ''">
+					, #{color}
+				</if>
+				<if test="content != ''">
+					, #{content}
+				</if>
+				<if test="hashTag != ''">
+					, #{hashTag}
+				</if>
+				, #{bookmark}
+				, #{memberId}
+			)
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="updateMemo" parameterType="MemoVO">
+		UPDATE memo
+			<set>
+				<if test="seqNo > 0">
+					seq_no = #{seqNo},
+				</if>
+				<if test="color != null and !color.equals('')">
+					color = #{color},
+				</if>
+				<if test="content != null and !content.equals('')">
+					content = #{content},
+				</if>
+				<if test="hashTag != null and !hashTag.equals('')">
+					hash_tag = #{hashTag},
+				</if>
+				<if test="bookmark != null and !bookmark.equals('')">
+					bookmark = #{bookmark},
+				</if>
+				update_date = sysdate
+			</set>
+		WHERE memo_id = #{memoId}
+		AND member_id = #{memberId}
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="deleteMemo" parameterType="MemoVO">
+		DELETE FROM memo
+		WHERE memo_id = #{memoId}
+		AND member_id = #{memberId}
+	</delete>
+	<delete id="deleteMemoImage" parameterType="MemoVO">
+		DELETE FROM attachment
+		WHERE menu_type = 'AA7'
+		AND post_id = #{memoId}
+	</delete>
+	
+	<!-- index 수정 -->
+	<update id="memoIndex" parameterType="MemoVO">
+		{call memoIndex(
+			#{memberId, mode=IN, jdbcType=VARCHAR},
+			#{memoId, mode=IN, jdbcType=INTEGER},
+			#{firstNo, mode=IN, jdbcType=INTEGER},
+			#{lastNo, mode=IN, jdbcType=INTEGER}
+		)}
+	</update>
+</mapper>

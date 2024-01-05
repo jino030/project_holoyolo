@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.holoyolo.app.holopayHistory.mapper.HoloPayHistoryMapper">
+	
+	<select id="holopayHistoryList" resultType="HoloPayHistoryVO">
+		SELECT HP_HISTORY_ID, HP_DATE, PRICE, HOLOPAY_COMMENT, TRADE_ID, MEMBER_ID, MEMBER_FINANCE_ID, fn_get_code_name(HP_TYPE) AS HP_TYPE
+        FROM holopay_history
+        WHERE member_id = #{memberId}
+        ORDER BY HP_HISTORY_ID desc
+	</select>
+
+	<select id="insertHolopayHistory" statementType="CALLABLE"
+		resultType="HoloPayHistoryVO">
+		{call p_recharge_holopay(#{memberId}, #{price},	#{hpDate}, #{hpType}, #{addPayresultType, mode=OUT, jdbcType=INTEGER})}
+	</select>
+
+
+	<select id="holopayBalance" resultType="int">
+		SELECT    
+	         NVL(SUM(NVL(HP1, 0)), 0) + NVL(SUM(NVL(HP4, 0)), 0) -
+	            (NVL(SUM(NVL(HP2, 0)), 0) + NVL(SUM(NVL(HP3, 0)), 0)) AS 잔액
+	      FROM (
+	         SELECT hp_type, price, member_id
+	         FROM holopay_history
+	         WHERE member_id = #{memberId})
+	      PIVOT (
+	         SUM(price) FOR hp_type IN ('HP1' AS HP1, 'HP2' AS HP2, 'HP3' AS HP3, 'HP4' AS HP4))
+	</select>
+	
+	
+	<select id="searchPay" resultType="HoloPayHistoryVO">
+		SELECT *     
+		FROM holopay_history
+		WHERE member_id = #{memberId}
+		AND  HP_DATE >= ADD_MONTHS(SYSDATE, #{searchMonth})
+		   ORDER BY HP_HISTORY_ID desc
+	</select>
+
+
+	<select id="searchPayPaged" resultType="HoloPayHistoryVO">
+    SELECT *
+    FROM (
+      SELECT hp_history_id, member_id, hp_date, hp_type, price, holopay_comment, trade_id,
+             member_finance_id, add_payresult_type,
+             ROW_NUMBER() OVER (ORDER BY hp_date) AS rnum
+      FROM holopay_history
+      WHERE member_id = #{memberId}
+      AND HP_DATE >= ADD_MONTHS(SYSDATE, #{searchMonth})
+         ORDER BY HP_HISTORY_ID desc
+    ) tmp
+    WHERE rnum BETWEEN #{start} AND #{end}
+       ORDER BY HP_HISTORY_ID desc
+  </select>
+
+  
+  <select id="getTotalRecords" resultType="int">
+    SELECT COUNT(*) 
+    FROM holopay_history
+    WHERE member_id = #{memberId}
+    AND HP_DATE >= ADD_MONTHS(SYSDATE, #{searchMonth})
+  </select>
+  
+</mapper>

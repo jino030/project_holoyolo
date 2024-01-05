@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.holoyolo.app.heart.mapper.HeartMapper">
+	  <select id="selectHeartCount" resultType="HeartVO">
+			SELECT count(*) as heartCount
+			FROM heart
+			WHERE trade_id = #{tradeId}
+	  </select>
+	  
+	  <select id="selectHeart" resultType="HeartVO">
+	  	SELECT member_id
+	  			, trade_id
+	  	FROM heart
+	  	WHERE trade_id = #{tradeId}
+	  	AND member_id = #{memberId}
+	  </select>
+	  
+	  <insert id="insertHeart" parameterType="heartVO">
+	  		INSERT INTO heart
+	  			(
+	  				member_id
+	  				, trade_id
+	  			)
+	  		VALUES
+	  			(
+	  				#{memberId}
+	  				, #{tradeId}
+	  			)
+	  </insert>
+	  
+	  <delete id="deleteHeart" parameterType="HeartVO">
+	  	DELETE FROM heart
+	  	WHERE trade_id = #{tradeId}
+	  	AND member_id = #{memberId}
+	  </delete>
+  </mapper>
+  

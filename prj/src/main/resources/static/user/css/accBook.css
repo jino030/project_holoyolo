@@ -1,0 +1,316 @@
+@charset "UTF-8";
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+
+*{
+	font-family: 'Noto Sans KR', sans-serif !important;
+
+}
+
+        #divbox {
+            background-color: white;
+            height: auto;
+            width: 400px;
+            margin: 0px;
+            padding: 20px;
+            margin: 0 auto;
+            border: 1px solid gainsboro;
+            width: 100%;
+            border-radius: 20px;
+        }
+
+        .Calendar>td {
+            width: 50px;
+            height: 50px;
+        }
+
+        .Calendar {
+            text-align: center;
+        }
+
+        .Calendar>thead>tr:first-child>td {
+            font-family: 'Questrial', sans-serif;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .Calendar>thead>tr:last-child>td {
+            font-family: 'Questrial', sans-serif;
+            font-weight: 600;
+        }
+
+        .Calendar>tbody>tr>td>p {
+            font-family: 'Montserrat', sans-serif;
+            height: 45px;
+            width: 45px;
+            border-radius: 45px;
+            transition-duration: .2s;
+            line-height: 45px;
+            margin: 2.5px;
+            display: block;
+            text-align: center;
+        }
+
+
+
+        .today {
+            background-color: #F5D042;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .pastDay {
+            /* background-color: #FFFFFF; */
+            cursor: pointer;
+            color: black;
+        }
+
+        .pastDay:hover {
+            background: #eee;
+        }
+
+         .pastDay.choiceDay,
+        .today.choiceDay {
+            background: #0A174E;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .pastDay.choiceDay.fail {
+            background: red;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .pastDay.choiceDay.success {
+            background: green;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        select {
+            border-right: 0;
+        }
+
+        #cal {
+            /* border: 1px solid palevioletred; */
+            padding: 10px;
+        }
+
+        #history {
+            padding: 15px;
+            flex: 3;
+            background-color: rgb(235 83 113 / 5%);
+            border-radius: 20px;
+        }
+
+        #history > h4 {
+            text-align: center;
+            font-weight: bold; 
+        }
+
+        #hisTable {
+            width: 100%;
+        }
+
+        #hisTable>td {
+            text-align: center;
+            padding: 5px;
+        }
+
+        .info {
+        	/* background-color: pink; */
+            border-radius: 20px;
+            /* box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px; */
+            margin-bottom: 30px;
+            padding: 10px;
+            margin-left: 5px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+
+        #hisTable {
+            margin-bottom: 30px;
+        }
+
+        #hisTable input {
+            width: 100px;
+        }
+
+        #inputTr {
+            margin-top: 20px;
+        }
+
+        .out {
+            color: #cf1515;
+            font-weight: bold;
+        }
+
+        .in {
+            color: #192f8f;
+            font-weight: bold;
+        }
+
+        .inout {
+            width: 20px;
+            /* height: 30; */
+        }
+
+        th {
+            text-align: center;
+        }
+
+        .success {
+            color: green;
+            font-weight: bolder;
+        }
+        .fail {
+            color: red;
+            font-weight: bolder;
+        }
+
+        .ing {
+            color: skyblue;
+            font-weight: bolder;
+        }
+
+        td {
+            text-align: center;
+        }
+        .today.ing {
+        	background : skyblue;
+        	color : white;
+        }
+        .today.choiceDay.ing {
+            background: #0A174E;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .label {
+            color: gray;
+            padding: 5px;
+            font-size: small;
+        }
+
+        .btn {
+            padding: 0;
+        }
+
+        .mybtn {
+            border: none;
+            background-color: #0000;
+        }
+        
+                /* From uiverse.io by @alexruix */
+        .input {
+            line-height: 28px;
+            border: 2px solid transparent;
+            border-bottom-color: #777;
+            padding: .2rem 0;
+            outline: none;
+            background-color: transparent;
+            color: #0d0c22;
+            transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+        
+        .input::placeholder {
+            color: #777;
+        }
+        
+        .input:focus::placeholder {
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        #inputTr {
+            /* border: 2px solid #777; */
+            padding: 3px;
+            margin-top: 50px;
+            /* border-radius: 20px; */
+            /* display: inline-block; */
+        }
+
+        #historyTitle, #sumByMonth {
+            margin-bottom: 30px;
+        }
+
+        #sumByMonth {
+            margin: 0 auto;
+        }
+        
+
+        #hisTable {
+            border-collapse: separate;
+        border-spacing: 10px 10px;
+        }
+
+        .red {
+            color: rgb(211, 5, 5);
+        }
+
+        .blue {
+            color: rgb(12, 12, 190);
+        }
+
+        .getResult > span, .aboutNotice > p{
+            color: #7a9cc6;
+            font-weight: bold;
+        }
+
+        .aboutNotice > p {
+            margin: 0;
+            padding: 20px;
+        }
+
+        .aboutNotice {
+            padding: 10px;
+            text-align: end;
+           
+        }
+
+        .price {
+            text-align: right;
+        }
+
+        
+        .text-bg-color {
+            display: inline-block;
+            background: #e6e6e6;
+            font-size: 12px;
+            padding: 5px 8px;
+            border-radius: 5px;
+            margin-right: 6px;
+            width: 73px;
+            text-align: center;
+        }
+
+        .darkBlue {
+            display: inline-block;
+            background: #09203f;
+            font-size: 11px;
+            padding: 5px 7px;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        .imgIcon  {
+            width: 15px;
+            /* height: 30px; */
+        }
+
+        .imgIconPlus {
+            width: 20px;
+        }
+        
+   
+   
+   
+   

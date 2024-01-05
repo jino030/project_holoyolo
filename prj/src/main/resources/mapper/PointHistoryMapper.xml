@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.holoyolo.app.pointHistory.mapper.PointHistoryMapper">
+	<select id="pointBalance" resultType="int">
+		SELECT    
+		    NVL(SUM(NVL(PA1, 0)), 0) - NVL(SUM(NVL(PA2, 0)), 0) AS nowPoint
+		FROM
+		    (
+		    SELECT point_type, price, member_id
+		    FROM point_history
+		    WHERE member_id = #{memberId}
+		    )
+		PIVOT
+		    (
+		    SUM(price) FOR point_type IN ('PA1' AS PA1, 'PA2' AS PA2)
+		    )
+	</select>
+
+   
+   <!-- 포인트 내역 조회 -->
+   <select id="getPointHistory" resultType="PointHistoryVO">
+   		SELECT 
+   			p.p_history_id
+   			, fn_get_code_name(p.point_type) as point_type
+   			, p.point_date
+   			, p.price
+   			, (
+                select club_name
+                from club
+                where club_id = p.club_id
+                ) as club_name 
+            , NVL(club_id, -1) as club_id
+   			, (
+                select title
+                from trade
+                where trade_id = p.trade_id
+                ) as title
+            , NVL(trade_id, -1) as trade_id
+            , (
+                select trade.seller_id
+                from trade
+                where trade_id = p.trade_id
+                ) as seller_id
+   			, member_id
+   		FROM point_history p 
+   		WHERE member_id = #{memberId}
+   		ORDER BY p_history_id desc
+   </select>
+
+</mapper>

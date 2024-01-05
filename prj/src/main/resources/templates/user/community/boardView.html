@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>holoyolo::커뮤니티</title>
+    <link th:href="@{/user/css/community.css}" rel="stylesheet" type="text/css">
+    <!-- TUI 에디터 CSS CDN -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+	
+    <link th:href="@{/user/css/community.css}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="/user/css/board.css">
+    <link rel="stylesheet" type="text/css" href="/user/css/boardInsert.css">
+
+</head>
+
+<body layout:fragment="content">
+
+    <div class="container update_container">
+	    <div class="text-left dp_flex space_between align-center">
+	        <h2 class="h2_title" th:if="${board.menuType}== AA2">정보공유</h2>
+	        <h2 class="h2_title" th:if="${board.menuType}== AA3">수다방</h2>
+	        <!--/* 버튼영역 start */-->
+		    <div id="updateDelBtnDiv col-1" class="align-right">
+                <button th:if="${board.menuType}== AA2" type="button" class="btns save btn btn-primary" data-toggle="modal" onclick="location.href='/board/info'">목록으로</button>
+	            <button th:if="${board.menuType}== AA3" type="button" class="btns save btn btn-primary" data-toggle="modal" onclick="location.href='/board/chat'">목록으로</button>
+	            <th:block sec:authorize="isAuthenticated()" th:if="${loginId == board.memberId}">
+	                <button type="button" class="btns save btn btn-primary" th:onclick="'location.href=\'/member/board/update?boardId='+ @{${board.boardId}} + '\''">수정</button>
+	                <button type="button" class="btns save btn btn-danger" data-toggle="modal" data-target="#deletePostModal">삭제</button>
+	                <input type="hidden" id="memberId" name="memberId" th:value="${#authentication.principal.memberVO.memberId}">
+	            </th:block>
+	        </div>
+	        <!--/* 버튼영역 end */-->
+	    </div>
+	    
+	    <!--/* 회원정보 부분 start */-->
+	    <div class="row member_info">
+            <div class="input-group col-3">
+                <div class="col-5">
+                    <p class="boardData">작성자</p>
+                </div>
+                <div class="col-7">
+                    <span class="boardData" id="writer"></span>
+                </div>
+            </div>
+            <div class="input-group col-3">
+                <div class="col-5">
+                    <p class="boardData">날짜</p>
+                </div>
+                <div class="col-7">
+                    <span class="boardData" id="writeDate"></span>
+                </div>
+            </div>
+            <div class="input-group col-3">
+                <div class="col-5">
+                    <p class="boardData ">조회수</p>
+                </div>
+                <div class="col-7">
+                    <span type="text" class="boardData boardDataNum" id="views" readonly></span>
+                </div>
+            </div>
+            <div class="input-group col-3">
+				<div class="col-5">
+				    <p class="boardData">좋아요</p>
+				</div>
+				<div class="col-7">
+				    <span class="boardData boardDataNum" id="boardLike"></span>
+				</div>
+            </div>
+        </div>
+        <!--/* 회원정보 부분 end */-->
+	    
+	    <!--/* 제목부분 start */-->
+        <div class="col-12 title_wrap input-group">
+            <div class="col-2">
+                <p class="boardData">제목</p>
+            </div>
+            <div class="my-col-10">
+                <div id="title"></div>
+            </div>
+        </div>
+        <!--/* 제목부분 end */-->
+
+		<!--/* 내용부분 start */-->
+        <div class="col-12 editor_container update_viewer flex-col">
+            <!--/* 에디터 콘텐츠 렌더링 영역 */-->
+            <div id="viewer"></div>
+            <div class="col-12 btn_wrap">
+	            <button class="btn" type="button" id="boardLikeBtn">&#129293;</button>
+	            <a href="#" class="btn" id="reportBtn">신고</a>
+	        </div>
+        </div>
+        <!--/* 내용부분 end */-->
+        
+        <!--/* 댓글 영역 start */-->
+        <div class="row reply_wrapper">
+            <div class="col-12">
+                <div class="col-12 padding-0 write_area">
+                    <textarea class="form-control" id="replyForm" cols="30" rows="3" placeholder="댓글을 입력하세요"></textarea>
+	                <div class="btn_wrap">
+	                    <button type="button" id="addReplyBtn" class="btn btn-primary">등록 </button>
+	                    <button type="button" id="cancelReplyBtn" class="btn btn-secondary">취소</button>
+	                </div>
+                </div>
+                <div class="col-12 padding-0">
+                    <div id="replyFormArea"></div>
+                    <div id="addreplyBtn"></div>
+                    <table class="table reply_table">
+                        <tbody id="ReplyTableBody"></tbody>
+                    </table>
+                    <div id="pagination-container">
+                        <nav aria-label="...">
+                            <ul class="pagination">
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/* 댓글 영역 end */-->
+
+        <div class="modal fade" id="deletePostModal" tabindex="-1" aria-labelledby="deletePostModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deletePostModalLabel">게시물 삭제</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        게시물을 삭제하시겠습니까
+
+                        삭제된 게시물은 복구가 불가능합니다.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal" id="deletPostBtn">삭제</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- TUI 에디터 JS CDN -->
+
+
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script th:src="@{/user/js/community.js}"></script>
+    <script>
+        window.onload = async () => {
+            findPost();
+
+            await checkLike();
+
+            await replyLoad(currentPage);
+
+        }
+        //좋아요버튼
+        let likeBtn = document.getElementById('boardLikeBtn');
+        likeBtn.addEventListener('click', addLike)
+        let addBtn = document.getElementById('addReplyBtn');
+        addBtn.addEventListener('click', insertReply);
+        let resetBtn = document.getElementById('cancelReplyBtn');
+        let replyForm = document.getElementById('replyForm');
+        resetBtn.addEventListener('click', function () {
+            replyForm.value = "";
+        });
+        let reportBtn = document.getElementById('reportBtn')
+        reportBtn.addEventListener('click',()=>reportFormSet())
+        document.getElementById('deletPostBtn')
+            .addEventListener('click', (e) => deletePost());
+
+        //사이드메뉴 표시
+        $(function(){
+        	let menu_type = "[[${board.menuType}]]"
+        	if(menu_type == 'AA2') {
+	          $('#_infoBoard').addClass('submenu_active');
+	        } else if(menu_type == 'AA3') {
+	          $('#_chatBoard').addClass('submenu_active');
+	        }
+        })
+        
+    </script>
+    
+</body>
+
+</html>

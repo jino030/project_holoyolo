@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>holoyolo::알뜰모임</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
+    <link th:href="@{/user/css/clubReview.css}" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div layout:fragment="content" style="width: 80%; margin: 0 auto;">
+        <h4><strong>[[${result.club.clubName}]]</strong>의 리뷰</h4>
+        <hr>
+        <div class="avg">
+            <h5>평균평점
+                <div class="star_rating" style="margin-top: 10px;">
+                    <span th:if="${result.avgstar != 0}" th:each="i : ${#numbers.sequence(1, result.avgstar)}"
+                        class="star on"> </span>
+
+                </div>
+            </h5>
+            <p>등록된 리뷰 ([[${result.reviews.size()}]])</p>
+        </div>
+
+        <div id="reviewlist" class="divbox">
+            <div class="divbox">
+                <div id="writeReview">
+                    <th:block th:if="${result.myreview == false and session.check eq true}">
+                        <div class="star_rating star_on">
+                            <span class="star on" value="1"> </span>
+                            <span class="star on" value="2"> </span>
+                            <span class="star on" value="3"> </span>
+                            <span class="star on" value="4"> </span>
+                            <span class="star on" value="5"> </span>
+                        </div>
+                        <textarea id="writeContents" class="writeArea"></textarea>
+                        <button class="navyBtn" onclick="reviewWrite()">등록</button>
+                    </th:block>
+                </div>
+                <div id="completeReview">
+                    <th:block th:if="${result.myreview == true}">
+                        <span>리뷰를 작성하셨습니다.</span>
+                    </th:block>
+                </div>
+                <div id="nomemberReview">
+                    <th:block th:if="${session.check != true}">
+                        <span>멤버만 리뷰작성이 가능합니다.</span>
+                    </th:block>
+                </div>
+            </div>
+            <hr>
+            <th:block th:if="${result.reviews.size == 0}">
+                <h5>등록된 리뷰가 없습니다.</h5>
+            </th:block>
+            <th:block th:if="${result.reviews.size != 0}">
+                <th:block th:each="review, stat : ${result.reviews}">
+                    <div class="rev">
+                        <h4 style="font-weight: bold;">[[${review.nickname}]]</h4>
+                        <div th:id="'stars_' + ${review.reviewId}">
+                            <div class="star_rating">
+                                <span th:each="i : ${#numbers.sequence(1, review.star)}" class="star on"> </span>
+                            </div>
+                        </div>
+                        <span class="writeDate"
+                            th:text="${#dates.format(review.writeDate, 'yyyy년 MM월 dd일 HH:mm')}"></span>
+
+                        <div>
+                            <h5 th:id="'reviewContent_' + ${review.reviewId}" class="showContent">[[${review.contents}]]
+                            </h5>
+
+                            <div th:id="'updateInput_' + ${review.reviewId}" style="display: none;">
+                                <textarea class="writeArea" type="text">[[${review.contents}]]</textarea>
+                                <button class="navyBtn"
+                                    th:onclick="'updateReview(\'' + ${review.reviewId} + '\',event)'">수정</button>
+                            </div>
+                        </div>
+
+                        <th:block th:if="${#authentication.Principal.memberVO.memberId eq review.memberId}">
+                            <img class="btn" th:onclick="'toggleUpdateMode(\'' + ${review.reviewId} + '\')'"
+                                th:src="@{/user/images/icon/edit.png}">
+                            <img class="btn" th:onclick="'deleteReview(\'' + ${review.reviewId} + '\')'"
+                                th:src="@{/user/images/icon/trash.png}">
+                        </th:block>
+                    </div>
+                    <br>
+
+                </th:block>
+            </th:block>
+        </div>
+
+        <script th:inline="javascript">
+            let clubId = /*[[${ result.club.clubId }]]*/ null;
+            let userId = /*[[${ userId }]]*/ null;
+            let nickname = /*[[${ user.nickname }]]*/ null;
+
+        </script>
+
+        <script src="/user/js/clubReview.js"></script>
+    </div>
+
+</body>
+
+</html>

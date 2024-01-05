@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{layout/layout}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>holoyolo</title>
+<link rel="icon" th:href="@{/user/images/common/favicon2.png}">
+<link rel="stylesheet" th:href="@{/user/home/css/animate.css}">
+<link rel="stylesheet" th:href="@{/user/home/css/owl.carousel.min.css}">
+<link rel="stylesheet" th:href="@{/user/home/css/jquery.fancybox.min.css}">
+<link rel="stylesheet" th:href="@{/user/home/fonts/ionicons/css/ionicons.min.css}">
+<link rel="stylesheet" th:href="@{/user/home/fonts/fontawesome/css/font-awesome.min.css}">
+<link rel="stylesheet" th:href="@{/user/home/fonts/flaticon/font/flaticon.css}">
+<link rel="stylesheet" th:href="@{/user/home/css/aos.css}">
+<!-- Theme Style -->
+<link rel="stylesheet" th:href="@{/user/home/css/style.css}">
+</head>
+
+<th:block layout:fragment="mainContent">
+	<div class="slider-item overlay" data-stellar-background-ratio="0.5"
+		style="background-image: url('/user/home/images/banner6.png');">
+		<div class="container">
+			<div
+				class="row slider-text align-items-center justify-content-center">
+				<div class="col-lg-12 text-center col-sm-12">
+					<h1 class="mb-4" data-aos="fade-up" data-aos-delay="100">
+						
+					</h1>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--/* 중고거래 start */-->
+	<div class="section portfolio-section">
+		<div class="container">
+			<div class="row mb-5 justify-content-center" data-aos="fade-up">
+				<div class="col-md-8 text-center">
+					<h2 class="mb-4 section-title">방금 올라온 중고물품</h2>
+					<p>믿을만한 이웃 간 중고거래 동네 주민들과 가깝고 따뜻한 거래를 지금 경험해보세요.</p>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="row mb-5 no-gutters">
+				<th:block th:each="trade : ${tradeList}">
+					<div class="trade-card col-sm-2 col-md-2 col-lg-2" data-aos="fade" data-aos-delay="100">
+						<a th:href="@{/member/tradeInfo(tradeId=${trade.tradeId},sellerId=${trade.sellerId})}" class="work-thumb">
+							<div class="work-text">
+								<h2>[[${trade.tradeCategory}]]</h2>
+								<p>[[${trade.title}]]</p>
+							</div>
+							<img th:src="@{/images/} + ${trade.saveFile}" alt="Image" class="img-fluid" th:style="|background-image: url('/images/${trade.saveFile}')|">
+						</a>
+					</div>
+				</th:block>
+			</div>
+		</div>
+	</div>
+	<!--/* 중고거래 end */-->
+
+
+	<!--/* 알뜰모임 start */-->
+	<div class="section bg-light block-11">
+		<div class="container">
+			<div class="row justify-content-center mb-5">
+				<div class="col-md-8 text-center">
+					<h2 class="mb-4 section-title">베스트 알뜰모임</h2>
+					<p>혼자서는 작심삼일, 알뜰모임에서 회원들과 함께 목표를 달성해나가세요!</p>
+				</div>
+			</div>
+			<div class="nonloop-block-11 owl-carousel">
+			
+				<!--/* 모임카드 start */-->
+				<th:block th:each="club : ${clubList}">
+					<div class="item d-flex">
+						<div class="block-33 h-100 d-flex">
+							<div class="vcard d-flex mb-3 flex-sm-column">
+								<div class="image align-self-center">
+									<img th:src="@{/images/} + ${club.clubProfileImg}" alt="Person here">
+								</div>
+								<div class="name-text align-self-center d-flex flex-sm-column">
+									<h2 class="heading">[[${club.clubName}]]</h2>
+									<span class="meta d-flex">
+										<img class="leader" alt="모임장로고" src="/user/home/images/leader.svg">
+										<span>[[${club.clubLeader}]]</span>
+									</span>
+								</div>
+							</div>
+							<div class="text d-flex flex-xl-column">
+								<div>
+									<h1 class="ranking">[[${club.rnum}]]</h1>
+									<blockquote>
+										<p>&ldquo;[[${club.clubIntro}]]&rdquo;</p>
+									</blockquote>
+								</div>
+								<div class="d-flex bottom-area">
+									<div>
+										<p class="club-info"><span>가입인원 </span><span>[[${club.joinCnt}]]</span>/<span>[[${club.clubPeople}]]</span></p>
+										<p class="club-info"><span>평균성공률 </span><span>[[${club.successRate}]]</span>%</p>
+									</div>
+									<div class="btn_wrapper d-flex">
+										<button type="button" id="moveClubDetail" th:onclick="|location.href='@{/member/club/clubPage(clubId=${club.clubId})}'|">모임상세보기</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</th:block>
+				<!--/* 모임카드 end */-->
+			</div>
+		</div>
+	</div>
+	<!--/* 알뜰모임 end */-->
+	
+	
+	
+	<!--/* 커뮤티니 start */-->
+	<div class="section portfolio-section">
+		<div class="container">
+			<div class="row mb-5 justify-content-center" data-aos="fade-up">
+				<div class="col-md-8 text-center">
+					<h2 class="mb-4 section-title">커뮤니티</h2>
+					<p>회원들과 자유롭게 정보를 공유하고, 이야기를 나누세요!</p>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="row mb-5 no-gutters d-flex community_wrap">
+				<!--/* 정보공유 start */-->
+				<div class="col-sm-6 col-md-6 col-lg-6 table_wrapper" data-aos="fade" data-aos-delay="100">
+					<div class="table_header d-flex">
+						<p class="comunity_title">정보공유</p>
+						<a href="/board/info"><img alt="더보기" src="/user/home/images/arrow-right-circle.svg" class="more_btn"></a>
+					</div>
+					<table class="table table-hover">
+						<thead>
+							<tr>
+								<th scope="col">no</th>
+								<th scope="col" class="td_title">제목</th>
+								<th scope="col" class="td_nickname">작성자</th>
+								<th scope="col" class="td_date">작성일자</th>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:each="info : ${infoBoard}">
+								<tr th:onclick="|location.href='@{/member/board/view(boardId=${info.boardId})}'|">
+									<td scope="row">[[${info.rnum}]]</td>
+									<td class="td_title">[[${info.title}]]</td>
+									<td class="td_nickname">[[${info.nickname}]]</td>
+									<td class="td_date">[[${#dates.format(info.writeDate, 'yyyy-MM-dd')}]]</td>
+								</tr>
+							</th:block>
+						</tbody>
+					</table>
+				</div>
+				<!--/* 정보공유 end */-->
+				
+				<!--/* 수다방 start */-->
+				<div class="col-sm-6 col-md-6 col-lg-6 table_wrapper" data-aos="fade" data-aos-delay="100">
+					<div class="table_header d-flex">
+						<p class="comunity_title">수다방</p>
+						<a href="/board/chat"><img alt="더보기" src="/user/home/images/arrow-right-circle.svg" class="more_btn"></a>
+					</div>
+					<table class="table table-hover">
+						<thead>
+							<tr>
+								<th scope="col">no</th>
+								<th scope="col" class="td_title">제목</th>
+								<th scope="col" class="td_nickname">작성자</th>
+								<th scope="col" class="td_date">작성일자</th>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:each="chat : ${chatBoard}">
+								<tr th:onclick="|location.href='@{/member/board/view(boardId=${chat.boardId})}'|">
+									<td scope="row">[[${chat.rnum}]]</td>
+									<td class="td_title">[[${chat.title}]]</td>
+									<td class="td_nickname">익명</td>
+									<td class="td_date">[[${#dates.format(chat.writeDate, 'yyyy-MM-dd')}]]</td>
+								</tr>
+							</th:block>
+						</tbody>
+					</table>
+				</div>
+				<!--/* 수다방 end */-->
+			</div>
+		</div>
+	</div>
+	
+	<!--/* 커뮤티니 end */-->
+	
+
+
+	<!-- loader -->
+	<div id="loader" class="show fullscreen"><svg class="circular" width="48px" height="48px">
+	<circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee" />
+	<circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+	  stroke="#ffc107" /></svg></div>
+	
+	<script th:src="@{/user/home/js/jquery-3.2.1.min.js}"></script>
+	<script th:src="@{/user/home/js/jquery-migrate-3.0.1.min.js}"></script>
+	<script th:src="@{/user/home/js/popper.min.js}"></script>
+	<script th:src="@{/user/home/js/bootstrap.min.js}"></script>
+	<script th:src="@{/user/home/js/owl.carousel.min.js}"></script>
+	<script th:src="@{/user/home/js/jquery.waypoints.min.js}"></script>
+	<script th:src="@{/user/home/js/jquery.fancybox.min.js}"></script>
+	<script th:src="@{/user/home/js/jquery.stellar.min.js}"></script>
+	<script th:src="@{/user/home/js/aos.js}"></script>
+	<script th:src="@{/user/home/js/main.js}"></script>
+
+</th:block>
+</html>

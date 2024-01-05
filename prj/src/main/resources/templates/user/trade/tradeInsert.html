@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+<head>
+<meta charset="UTF-8">
+<title>holoyolo::중고거래</title>
+<link th:href="@{/user/css/trade.css}" rel="stylesheet" type="text/css">
+<!-- 소스 다운 -->
+<script src="https://unpkg.com/@yaireo/tagify"></script>
+<!-- 폴리필 (구버젼 브라우저 지원) -->
+<script src="https://unpkg.com/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+<link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div>
+			<div class="card-body">
+				<form class="row g-3" th:action="@{/member/tradeInsert}"
+					method="POST" th:object="${tradeVO}" enctype="multipart/form-data">
+					<div class="col-md-12 writeInput">
+						<label for="title" class="form-label">제목<span class="star">*</span></label>
+						<input type="text" class="form-control" id="title" placeholder="제목을 입력하세요" required th:field="*{title}" autofocus>
+					</div>
+					<div class="col-md-3 writeInput">
+						<label for="tradeCategory" class="form-label">상품카테고리<span class="star">*</span></label> 
+						<select id="tradeCategory" class="form-select" required th:field="*{tradeCategory}">
+							<option selected value="">선택하세요</option>
+							<option value="TB1">생활용품</option>
+							<option value="TB2">의류</option>
+							<option value="TB3">식품</option>
+							<option value="TB4">반려용품</option>
+							<option value="TB5">도서</option>
+							<option value="TB6">문구</option>
+							<option value="TB7">가구</option>
+							<option value="TB8">기타</option>
+						</select>
+					</div>
+					<div class="col-md-3 writeInput">
+						<label for="tradeType" class="form-label">거래방식<span class="star">*</span></label> 
+						<select id="tradeType" class="form-select" required th:field="*{tradeType}">
+							<option selected value="">선택하세요</option>
+							<option value="TA1">직거래</option>
+							<option value="TA2">비대면</option>
+						</select>
+					</div>
+					<div class="col-md-3 writeInput">
+						<label for="paymentType" class="form-label">결제방식<span class="star">*</span></label> 
+						<select id="paymentType" class="form-select" required th:field="*{paymentType}">
+							<option selected value="">선택하세요</option>
+							<option value="TC1">현금결제</option>
+							<option value="TC2">홀로페이</option>
+						</select>
+					</div>
+					<div class="col-md-3 writeInput">
+						<label for="price" class="form-label">금액</label> <input
+							type="number" class="form-control" id="price" th:field="*{price}"><span
+							class="priceUnit">원</span>
+					</div>
+					<div class="col-12 writeInput">
+						<label for="description" class="form-label">상품 설명<span class="star">*</span></label>
+						<textarea class="form-control" id="description" style="height: 300px;" required th:field="*{description}"></textarea>
+					</div>
+					<div class="col-md-12 writeInput">
+						<label for="tradeImg" class="form-label">상품사진<span class="star">*</span></label>
+						<div class="imgFlex">
+							<img class="tradeImgPlus" id="tradeImg" th:src="@{/user/images/trade/photo.png}"> 
+							<input class="real_file" name="uploadFiles" type="file" required multiple />
+							<div class="file-list"></div>
+						</div>
+
+					</div>
+					<div class="col-md-3 writeInput placeSelect">
+						<div>
+							<label for="tradePlace" class="form-label">거래희망장소</label>
+						</div>
+						<button type="button" class="placeSelectButton" id="placeSelectButton" disabled="disabled">
+							<p>장소 선택 ></p>
+						</button>
+						<input type="text" class="form-control tradePlaceSelect" id="tradePlace" name="tradePlace" style="display:none; margin-top:15px;" readonly>
+						<input type="text" id="latitude" name="latitude" style="display:none">
+						<input type="text" id="longitude" name="longitude" style="display:none">
+					</div>
+					<div class="col-md-12 writeInput buttonFrom">
+						<button type="reset" class="btn btn-secondary">취소</button>
+						<button type="submit" class="btn btn-primary">등록</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+		<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=41f4363083eed1ec3ebd60c038e1c2b7&libraries=services"></script>
+		<script src="/user/js/tradeInsert.js"></script>
+	</div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+
+<head>
+	<meta charset="UTF-8">
+	<title>holoyolo::문의</title>
+	<!-- 소스 다운 -->
+	<script src="https://unpkg.com/@yaireo/tagify"></script>
+	<!-- 폴리필 (구버젼 브라우저 지원) -->
+	<script src="https://unpkg.com/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+	<link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+	<link th:href="@{/user/css/pay.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/user/css/board.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/user/css/question.css}" rel="stylesheet" type="text/css">
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+	<style>
+		input::placeholder {
+		  	color: #bbb;
+		  	font-size: 14px;
+		}
+		textarea::placeholder {
+		  	color: #bbb;
+		  	font-size: 14px;
+		}
+		#description {
+			padding: 18px;;
+		}
+	</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container">
+			<div>
+				<h2 class="h2_title" th:text="${menuType}"></h2>
+				<form class="row g-3 insert_wrap" th:action="@{/question/update}" method="POST" th:object="${questionVO}"
+					enctype="multipart/form-data">
+					<input type="hidden" th:field="${questionVO.questionId}" />
+					<div class="col-md-12 writeInput">
+						<label for="title" class="form-label">제목<span class="star">*</span></label>
+						<input type="text" class="form-control" id="title" placeholder="제목을 입력하세요" required
+							th:field="*{title}" maxlength="30">
+					</div>
+					<div class="d-flex align-items-center col-6 type-wrap">
+						<span class="form-label">문의 유형</span>
+						<select id="questionType" class="col-3" th:field="*{questionType}">
+							<option value="MA1">가계부</option>
+							<option value="MA2">중고거래</option>
+							<option value="MA3">알뜰모임</option>
+							<option value="MA4">커뮤니티</option>
+							<option value="MA5">메모</option>
+							<option value="MA6">홀로페이</option>
+							<option value="MA7">포인트</option>
+							<option value="MA8">기타</option>
+						</select>
+					</div>
+					<div class="col-12 writeInput">
+						<textarea class="form-control" id="description" style="height: 300px;" required
+							th:field="*{content}" maxlength="1000"></textarea>
+					</div>
+
+					<div class="col-md-12 writeInput">
+						<label for="questionImg" class="form-label">이미지<span class="star">*</span></label>
+						<div class="imgFlex">
+							<img class="tradeImgPlus" id="questionImg" th:src="@{/user/images/trade/photo.png}">
+							<input class="real_file" name="imageFiles" type="file" accept="image/*" multiple />
+							<div class="file-list">
+								<li calss="position_rela" th:each="questionImg, stat : ${questionImg}">
+									<img th:data-file="${questionImg.saveFile}"
+										th:src="@{/user/images/trade/delete-button.png}" class="delBtn position_absol"
+										th:onclick=fileDeleteBtn(event)>
+									<img th:src="@{/images/}+ ${questionImg.saveFile}" class="imgSize"
+										th:data-file="${questionImg.saveFile}">
+								</li>
+							</div>
+						</div>
+					</div>
+					<div class="col-12 writeInput">
+						<div class="input-group mb-3">
+							<span class="input-group-text" id="openKakao">첨부파일<span class="star">*</span></span>
+							<input type="file" name="attachmentFiles" class="form-control" id="questionAttach"
+								aria-describedby="basic-addon3" multiple>
+						</div>
+					</div>
+					<div id="attachedFilesContainer">
+						<!-- 첨부된 파일 목록이 표시될 공간 -->
+					</div>
+
+					<div class="col-md-12 writeInput buttonFrom">
+						<a type="button" class="btn btn-secondary" id="cancelBtn"  th:href="@{/member/cs/help/qna/view(id=${questionVO.questionId})}">취소</a>
+						<button type="submit" class="btn btn-primary">등록</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+		<script
+			src="//dapi.kakao.com/v2/maps/sdk.js?appkey=41f4363083eed1ec3ebd60c038e1c2b7&libraries=services"></script>
+		<script th:inline="javascript">
+			let imgList = /*[[${questionImg}]]*/ null;
+			let imgListSize = imgList ? imgList.length : 0;
+			let postId = /*[[${questionVO.questionId}]]*/ 0;
+			let attachList = /*[[${questionAttach}]]*/ null;
+		</script>
+		<script src="/user/js/noticeUpdate.js"></script>
+		<script src="/user/js/community.js"></script>
+
+	</div>
+</body>
+
+</html>
